@@ -48,6 +48,9 @@ SetScene{
   airdebris_particlesize = fif(jumping, 0.12, 5),
 --  airdebris_fieldsize = 300,
 --	airdebris_layer = 13,
+	hide_default_background_verticals = true,
+	use_intro_swoop_cam = false,
+
 	useblackgrid=false,
 	twistmode={curvescaler=1, steepscaler=fif(fullsteep,1,.65)} -- note: "cork" is the same as {curvescaler=1, steepscaler=1} and "cork_flatish" is the same as {curvescaler=1, steepscaler=.4}
 }
@@ -91,7 +94,7 @@ squareMesh = BuildMesh{
 			texture = "NewBlock.png",
 		    height = 0,
 		    float_on_water = false,
-		    scale = {1.4,1,1}
+		    scale = {1.3,1,0.8}
 		},
 		greyblocks={
 			--mesh = "singlespike.obj",
@@ -287,16 +290,16 @@ end
 SetSkybox{
   sky=ifhifi({
     showsun = true,
-    flare = true,
+    flare = false,
     month=1,
     hour=13,
     minute=0,
     longitude=184.5,
-    cloudmaxheight=4,
-    cloudminheight=-4.0,
+    cloudmaxheight=1.0,
+    cloudminheight=-1.0,
     clouddensity=0.5,
-    cirrusposition=-0.1,
-    useProceduralAmbientLight = ifhifi(true, false),
+    cirrusposition=-8.0,
+    useProceduralAmbientLight = true,
     useProceduralSunLight = ifhifi(true, false)
   }, nil),
 	skysphere="skybox2.png",
@@ -384,28 +387,29 @@ track = GetTrack()--get the track data from the game engine
 
 
 --RAILS. rails are the bulk of the graphics in audiosurf. Each one is a 2D shape extruded down the length of the track.
-if #skinvars["lanedividers"] > 2 then
-	local laneDividers = skinvars["lanedividers"]
-	for i=1,#laneDividers do
-		CreateRail{ -- lane line
-			positionOffset={
-				x=laneDividers[i],
-				y=0.1},
-			crossSectionShape={
-				{x=-.07,y=0},
-				{x=.07,y=0}},
-			perShapeNodeColorScalers={
-				1,
-				1},
-			colorMode="static",
-			color = {r=255,g=255,b=255},
-			flatten=false,
-			nodeskip = 2,
-			wrapnodeshape = false,
-			shader="VertexColorUnlitTinted"
-		}
-	end
-end
+-- if #skinvars["lanedividers"] > 2 then
+-- 	local laneDividers = skinvars["lanedividers"]
+-- 	for i=1,#laneDividers do
+-- 		CreateRail{ -- lane line
+-- 			positionOffset={
+-- 				x=laneDividers[i],
+-- 				y=0.1},
+-- 			crossSectionShape={
+-- 				{x=-.07,y=0},
+-- 				{x=.07,y=0}},
+-- 			perShapeNodeColorScalers={
+-- 				1,
+-- 				1},
+-- 			colorMode="static",
+-- 			color = {r=255,g=255,b=255,a=125},
+-- 			flatten=false,
+-- 			nodeskip = 2,
+-- 			wrapnodeshape = false,
+-- 			shader="VertexColorUnlitTintedAlpha",
+-- 			shadercolors={_Color={r=255,g=255,b=255,a=255}}
+-- 		}
+-- 	end
+-- end
 
 
 
@@ -466,7 +470,7 @@ if not jumping then
 		fullfuture = true,
 		color = {r=255,g=255,b=255,a=125},
 		flatten=false,
-		renderqueue=3001,
+		renderqueue=3000,
 		--texture="subroad.png",
 		shader="VertexColorUnlitTintedAlpha",
 		shadercolors={_Color={r=255,g=255,b=255,a=255}}
