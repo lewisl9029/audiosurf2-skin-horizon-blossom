@@ -41,15 +41,13 @@ SetScene{
 	towropes = jumping,--use the tow ropes if jumping
 	airdebris_count = ifhifi(500,0),
 	airdebris_density = ifhifi(10,0),
-	airdebris_texture = "ena64.png",
+	airdebris_texture = "air64.png",
 
 --	airdebris_count = ifhifi(fif(jumping, 80000, 100000),1000),
 --	airdebris_density = ifhifi(100,2),
   airdebris_particlesize = fif(jumping, 0.12, 5),
 --  airdebris_fieldsize = 300,
 --	airdebris_layer = 13,
-
-  ambientlight = {0.99, 0.99, 0.99},
 	useblackgrid=false,
 	twistmode={curvescaler=1, steepscaler=fif(fullsteep,1,.65)} -- note: "cork" is the same as {curvescaler=1, steepscaler=1} and "cork_flatish" is the same as {curvescaler=1, steepscaler=.4}
 }
@@ -79,35 +77,45 @@ squareMesh = BuildMesh{
 				meshes={"squaremorph_baseline.obj", "squaremorph0.obj", "squaremorph1.obj", "squaremorph2.obj", "squaremorph3.obj", "squaremorph4.obj"}
 			}
 
-
 	SetBlocks{
-		maxvisiblecount = ifultra(100,30),
+		maxvisiblecount = fif(hifi,100,30),
+		allow_mod_block_scaling = false,
 		colorblocks={
-			mesh = "SingleLozenge.obj",
+			--mesh = "SingleLozenge.obj",
+			mesh = "NewBlock.obj",
 			reflect = ifhifi(true, false),
 			--shader = fif(ispuzzle, "Diffuse", "Rim Light"),
-			shader = fif(ispuzzle, "VertexColorUnlitTinted", "VertexColorUnlitTinted"),
+			--shader = fif(ispuzzle, "Diffuse", "VertexColorUnlitTinted"),
+			shader = fif(ispuzzle, "UnlitEdgedBlock", "UnlitEdgedBlock"),
 			shadersettings={_Brightness=1.42},
-			texture = "DoubleLozenge.png",
+			texture = "NewBlock.png",
 		    height = 0,
 		    float_on_water = false,
 		    scale = {1.4,1,1}
 		},
 		greyblocks={
-			mesh = "singlespike.obj",
+			--mesh = "singlespike.obj",
+			mesh = "NewSpikeRot.obj",
 			reflect = ifhifi(true, false),
-			shader = "VertexColorUnlitTinted",
-			texture = "doublespike.png"
+			shader = "UnlitEdgedSpike",
+			texture = "NewBlock.png"
+			--shader = "VertexColorUnlitTinted",
+			--texture = "doublespike.png"
 		},
 		powerups={--override the following objects in case the mod uses them
 			powerpellet={
-				mesh = squareMesh,
-				shader = fif(hifi,"MatCap/Vertex/Textured Lit Double", "MatCap/Vertex/PlainBright"),
-				shadersettings = fif(hifi, {_Brightness=3.0}, {_Brightness=5}),
-				textures = {_MainTex="White.png", _MatCap="matcapchrome.jpg"},
-				scale = {2.7,2.7,2.7},
-				reflect = ifhifi(true, false),
-				shadercolors = {_Color="highway", scaletype="intensity", minscaler=2, maxscaler=2.5}
+				--mesh = squareMesh,
+				mesh = "PowerStar.obj",
+				--shader = fif(hifi,"MatCap/Vertex/Textured Lit Double", "MatCap/Vertex/PlainBright"),
+				shader = fif(ispuzzle, "UnlitEdgedBlock", "UnlitEdgedBlock"),
+				--shadersettings = fif(hifi, {_Brightness=3.0}, {_Brightness=5}),
+				shadersettings={_Brightness=1.42},
+				--textures = {_MainTex="White.png", _MatCap="matcapchrome.jpg"},
+				texture = "NewBlock.png",
+				scale = {1,1,1},
+				--scale = {2.7,2.7,2.7},
+				shadercolors = {_Color="highway", scaletype="intensity", minscaler=2, maxscaler=2.5},
+				reflect = ifhifi(true, false)
 			}
 		}
 	}
