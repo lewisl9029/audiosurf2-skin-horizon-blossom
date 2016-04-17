@@ -30,24 +30,25 @@ fullsteep = jumping or skinvars.prefersteep or (not ispuzzle)
 SetScene{
 	glowpasses = 0,
 	glowspread = 0,
-	radialblur_strength = ifultra(.2,0), -- foreground radial blur
+	radialblur_strength = ifultra(.4,0), -- foreground radial blur
 	-- radialblur_strength = ifhifi(.1,0), -- foreground radial blur
 --	radialblur_strength = fif(jumping,2,0),
 	--environment = "city",
 	watertype = 0,
-	water = jumping, --only use the water cubes in wakeboard mode
+	water = false, --only use the water cubes in wakeboard mode
 	watertint = {r=230,g=230,b=230,a=100},
 	watertexture = "WaterCubesBlue_BlackTop_WhiteLowerTier.png",--texture used to color the dynamic "digital water" surface
-	towropes = jumping,--use the tow ropes if jumping
-	airdebris_count = ifhifi(500,0),
-	airdebris_density = ifhifi(10,0),
-	airdebris_texture = "air64.png",
+	towropes = false,--use the tow ropes if jumping
+	airdebris_count = ifhifi(2000,0),
+	airdebris_density = ifhifi(1,0),
+	airdebris_texture = "sakura2.png",
 
 --	airdebris_count = ifhifi(fif(jumping, 80000, 100000),1000),
 --	airdebris_density = ifhifi(100,2),
-  airdebris_particlesize = fif(jumping, 0.12, 5),
---  airdebris_fieldsize = 300,
---	airdebris_layer = 13,
+    airdebris_particlesize = 10,
+    airdebris_flashsizescaler = .1,
+    -- airdebris_fieldsize = 300,
+	airdebris_layer = 13,
 	hide_default_background_verticals = true,
 	use_intro_swoop_cam = false,
 
@@ -90,7 +91,7 @@ squareMesh = BuildMesh{
 			--shader = fif(ispuzzle, "Diffuse", "Rim Light"),
 			--shader = fif(ispuzzle, "Diffuse", "VertexColorUnlitTinted"),
 			shader = fif(ispuzzle, "UnlitEdgedBlock", "UnlitEdgedBlock"),
-			shadersettings={_Brightness=1.42},
+			shadersettings={_Brightness=1.00},
 			texture = "NewBlock.png",
 		    height = 0,
 		    float_on_water = false,
@@ -112,7 +113,7 @@ squareMesh = BuildMesh{
 				--shader = fif(hifi,"MatCap/Vertex/Textured Lit Double", "MatCap/Vertex/PlainBright"),
 				shader = fif(ispuzzle, "UnlitEdgedBlock", "UnlitEdgedBlock"),
 				--shadersettings = fif(hifi, {_Brightness=3.0}, {_Brightness=5}),
-				shadersettings={_Brightness=1.42},
+				shadersettings={_Brightness=1.00},
 				--textures = {_MainTex="White.png", _MatCap="matcapchrome.jpg"},
 				texture = "NewBlock.png",
 				scale = {1,1,1},
@@ -190,7 +191,82 @@ if jumping then
 		}
 	}
 else
+    local shipMesh = BuildMesh{
+			mesh="racingship_scaled75.obj",
+			barycentricTangents = true, --for use with wireframe shaders
+			--calculateTangents = true,
+			calculateNormals = false,
+			submeshesWhenCombining = false
+		}
+
+		shipMaterial = BuildMaterial{
+			renderqueue = 2000,
+			shader="UnlitTintedTexGlowWire",
+			shader = "MatCap/Vertex/PlainBrightGlow",
+			shadersettings={_GlowScaler=9, _Brightness=.66},
+			shadercolors={
+				_Color = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1},
+				--_SpecColor = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1},
+				_GlowColor = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1}
+				},
+			textures={_MatCap="matcapchrome2.jpg", _Glow="glowBWj1.png"}
+		}
+
+		vehicleTable={
+			min_hover_height= 0.11,
+			max_hover_height = 1.4,
+			use_water_rooster = false,
+            smooth_tilting = false,
+            smooth_tilting_speed = 10,
+            smooth_tilting_max_offset = -20,
+			pos={x=0,y=0,z=0},
+			--scale={x=.75, y=.75, z=.75},
+
+			mesh = shipMesh,--built with BuildMesh above
+			--materials = {shipMaterial}, --assign the pre-created material
+			material = shipMaterial,
+			reflect = true,
+			--mesh="racingship.obj",
+			--calculateTangents = true,
+			--calculateNormals = false,
+			--submeshesWhenCombining = false,
+			layer = 15,
+--			renderqueue = 2000,
+--			shader="SelfGlowBumpSpec2_compiled.shader",
+--			shadersettings={_Shininess=0.1, _GlowScaler=9},
+--			shadercolors={
+--				_Color = {colorsource="highwayinverted", scaletype="intensity", minscaler=1, maxscaler=1},
+--				_SpecColor = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1},
+--				_GlowColor = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1}
+--				},
+--			textures={_MainTex="maintex_darkerNeg170_highlights.png", _BumpMap="normal.png", _Glow="glowBW.png"},
+			scale = {x=1,y=1,z=1},
+			thrusters = {crossSectionShape={{-.35,-.35,0},{-.5,0,0},{-.35,.35,0},{0,.5,0},{.35,.35,0},{.5,0,0},{.35,-.35,0}},
+						perShapeNodeColorScalers={.5,1,1,1,1,1,.5},
+						shader="TransparentShadowCaster",
+						layer = 14,
+						renderqueue = 3000,
+						colorscaler = {close=2.5, far=0},
+						sizefalloff = 1,
+						minrenderedsize = 0.05,
+						extrusions=25,
+						stretch=-0.1191,
+						updateseconds = 0.025,
+						instances={
+							{pos={0.03,0.49,-1.62},rot={0,0,0},scale={0.6,0.6,0.6}},
+							{pos={0.03,0.49,-1.62},rot={0,0,0},scale={0.45,0.45,0.8}},
+							{pos={0.03,0.49,-1.62},rot={0,0,0},scale={0.3,0.3,0.8}},
+							{pos={0.03,0.49,-1.62},rot={0,0,0},scale={0.1,0.1,0.8}},
+
+							{pos={0.31,0.28,-1.64},rot={0,0,0},scale={0.3,0.3,0.66}},
+							{pos={0.31,0.28,-1.64},rot={0,0,0},scale={0.1,0.1,0.66}},
+
+							{pos={-0.25,0.28,-1.64},rot={0,0,0},scale={0.3,0.3,0.66}},
+							{pos={-0.25,0.28,-1.64},rot={0,0,0},scale={0.1,0.1,0.66}}
+						}}
+		}
 	SetPlayer{
+        
 		--showsurfer = false,
 		--showboard = false,
 		cameramode = "third",
@@ -209,43 +285,44 @@ else
 			transitionspeed = 1,
 			puzzleoffset=-0.65,
 			puzzleoffset2=-1.5},
-		vehicle={ --livecoding not supported here
-			min_hover_height= 0.23,
-			max_hover_height = 0.8,
-			use_water_rooster = false,
-            smooth_tilting = false,
-            smooth_tilting_speed = 10,
-            smooth_tilting_max_offset = -20,
-			pos={x=0,y=0,z=0},
-			mesh="ninjamono.obj",
-			--shader="VertexColorUnlitTintedPixelate",
-			shader="Rim Light Pixelate",
-			--layer = ifhifi(14,15), -- in hifif mode, render it to the topmost only. so the non-pixelated parts don't show through
-			layer = 15,
-			reflect = ifhifi(true, false),
-			renderqueue = 2000,
-			shadersettings={_Scale=8, _Brightness=1.5},
-			shadercolors={
-				_Color = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1.5},
-				_RimColor = {0,0,0}},
-			texture="ninjaMono.png",
-			scale = {x=1,y=1,z=1},
-      thrusters =ifhifi( {crossSectionShape={{-.35,-.35,0},{-.5,0,0},{-.35,.35,0},{0,.5,0},{.35,.35,0},{.5,0,0},{.35,-.35,0}},
-						perShapeNodeColorScalers={.5,1,1,1,1,1,.5},
-						--shader="VertexColorUnlitTinted",
-						shader="VertexColorUnlitTintedAddSmooth",
-						layer = 14,
-						renderqueue = 2999,
-						colorscaler = 2,
-						extrusions=22,
-						stretch=-0.1191,
-						updateseconds = 0.025,
-						instances={
-							{pos={0,.46,-1.28},rot={0,0,0},scale={.7,.7,.7}},
-							{pos={.175,0.21,-1.297},rot={0,0,58.713},scale={.7,.7,.7}},
-							{pos={-.175,0.21,-1.297},rot={0,0,313.7366},scale={.7,.7,.7}}
-						}}, false)
-		}
+        vehicle=vehicleTable
+		-- vehicle={ --livecoding not supported here
+		-- 	min_hover_height= 0.23,
+		-- 	max_hover_height = 0.8,
+		-- 	use_water_rooster = false,
+        --     smooth_tilting = false,
+        --     smooth_tilting_speed = 10,
+        --     smooth_tilting_max_offset = -20,
+		-- 	pos={x=0,y=0,z=0},
+		-- 	mesh="ninjamono.obj",
+		-- 	--shader="VertexColorUnlitTintedPixelate",
+		-- 	shader="Rim Light Pixelate",
+		-- 	--layer = ifhifi(14,15), -- in hifif mode, render it to the topmost only. so the non-pixelated parts don't show through
+		-- 	layer = 15,
+		-- 	reflect = ifhifi(true, false),
+		-- 	renderqueue = 2000,
+		-- 	shadersettings={_Scale=8, _Brightness=1.5},
+		-- 	shadercolors={
+		-- 		_Color = {colorsource="highway", scaletype="intensity", minscaler=1, maxscaler=1.5},
+		-- 		_RimColor = {0,0,0}},
+		-- 	texture="ninjaMono.png",
+		-- 	scale = {x=1,y=1,z=1},
+        --     thrusters =ifhifi( {crossSectionShape={{-.35,-.35,0},{-.5,0,0},{-.35,.35,0},{0,.5,0},{.35,.35,0},{.5,0,0},{.35,-.35,0}},
+		-- 				perShapeNodeColorScalers={.5,1,1,1,1,1,.5},
+		-- 				--shader="VertexColorUnlitTinted",
+		-- 				shader="VertexColorUnlitTintedAddSmooth",
+		-- 				layer = 14,
+		-- 				renderqueue = 2999,
+		-- 				colorscaler = 2,
+		-- 				extrusions=22,
+		-- 				stretch=-0.1191,
+		-- 				updateseconds = 0.025,
+		-- 				instances={
+		-- 					{pos={0,.46,-1.28},rot={0,0,0},scale={.7,.7,.7}},
+		-- 					{pos={.175,0.21,-1.297},rot={0,0,58.713},scale={.7,.7,.7}},
+		-- 					{pos={-.175,0.21,-1.297},rot={0,0,313.7366},scale={.7,.7,.7}}
+		-- 				}}, false)
+		-- }
     -- vehicle={
 		-- 	--mesh="AS2_ITM3D_Cube-Pickup_small.obj",
 		-- 	mesh="AS2_ITM2D_Game-Vehicle.obj",
@@ -282,6 +359,16 @@ else
 	}
 end
 
+function Update(dt, trackLocation, playerStrafe, playerJumpHeight, intensity)
+    if not hifi then
+        return
+    end
+	if shipMaterial then
+		local enginePower = 3 + 20*intensity
+		UpdateShaderSettings{material=shipMaterial, shadersettings={_GlowScaler=enginePower}}
+	end
+end
+
 --if hifi then
 --	SetSkybox{
 --		skyscreen = "Skyscreen/TheGrid"
@@ -289,20 +376,20 @@ end
 --else
 SetSkybox{
   sky=ifhifi({
-    showsun = true,
+    showsun = false,
     flare = false,
-    month=1,
+    month=8,
     hour=13,
     minute=0,
     longitude=184.5,
-    cloudmaxheight=1.0,
-    cloudminheight=-1.0,
-    clouddensity=0.5,
-    cirrusposition=-8.0,
+    cloudmaxheight=2.0,
+    cloudminheight=-4.0,
+    clouddensity=0.6,
+    cirrusposition=-4.0,
     useProceduralAmbientLight = true,
-    useProceduralSunLight = ifhifi(true, false)
+    useProceduralSunLight = true
   }, nil),
-	skysphere="skybox2.png",
+	skysphere="skybox4.png",
 	--color=fogColor
 	color={255,255,255,255}
 }
@@ -312,27 +399,32 @@ SetSkybox{
 --end
 
 SetTrackColors{ --enter any number of colors here. The track will use the first ones on less intense sections and interpolate all the way to the last one on the most intense sections of the track
-    {r=214, g=0, b=254},
-    {r=0, g=176, b=255},
-    {r=0, g=184, b=0},
-    {r=255, g=255, b=0},
-	{r=255, g=0, b=0}
+	    {r=170, g=0, b=255},
+	    {r=63, g=81, b=181},
+	    {r=0, g=176, b=255},
+		{r=0, g=200, b=83},
+		{r=255, g=235, b=59},
+		{r=230, g=81, b=0},
+		{r=213, g=0, b=0}
 }
 
 if skinvars.colorcount < 5 then
 	SetBlockColors{
+	    {r=170, g=0, b=255},
 	    {r=0, g=176, b=255},
-	    {r=0, g=184, b=0},
-	    {r=255, g=255, b=0},
-		{r=255, g=0, b=0}
+		{r=0, g=200, b=83},
+		{r=230, g=81, b=0},
+		{r=213, g=0, b=0}
 	}
 else
 	SetBlockColors{
-	    {r=214, g=0, b=254},
+	    {r=170, g=0, b=255},
+	    {r=63, g=81, b=181},
 	    {r=0, g=176, b=255},
-	    {r=0, g=184, b=0},
-	    {r=255, g=255, b=0},
-		{r=255, g=0, b=0}
+		{r=0, g=200, b=83},
+		{r=255, g=235, b=59},
+		{r=230, g=81, b=0},
+		{r=213, g=0, b=0}
 	}
 end
 
@@ -368,15 +460,15 @@ SetWake{ --setup the spray coming from the two pulling "boats"
 }
 
 SetRings{ --setup the tracks tunnel rings. the airtexture is the tunnel used when you're up in a jump
-  texture = "aRing_FadedEarringAlphaTestable_1024.png",
+    texture = "aRing_FadedEarringAlphaTestable_1024_4.png",
 	--texture = ByQuality4("aRing_FadedEarringAlphaTestable_256.png", "aRing_FadedEarringAlphaTestable_512.png", "aRing_FadedEarringAlphaTestable_1024.png", "aRing_FadedEarringAlphaTestable_1024.png"),
 	--texture="Classic_OnBlack",
-	--shader="VertexColorUnlitTintedAddSmooth",
-	shader = "VertexColorUnlitTintedAddDouble",
+	shader="VertexColorUnlitTintedAddSmooth",
+	-- shader = "VertexColorUnlitTintedAddDouble",
 	layer = 13, -- on layer13, these objects won't be part of the glow effect
 	size=trackWidth*2, --22
 	offset = fif(jumping, {0,0,0}, {0,1,0}),
-	percentringed=ifhifi(.2, 0.5),-- .2,
+	percentringed=ifhifi(.4, .2),-- .2,
 	airtexture="Bits.png",
 	airshader="VertexColorUnlitTintedAddSmoothNoDepth",
 	airsize=ifhifi(16, 0)
@@ -456,61 +548,215 @@ CreateRail{--distant water
 }
 --]]
 
-if not jumping then
-	CreateRail{--road surface
-		positionOffset={
-			x=0,
-			y=0},
-		crossSectionShape={
-			{x=-trackWidth,y=0},
-			{x=trackWidth,y=0}},
-		colorMode="static",
-		layer=13,
-		wrapnodeshape = false,
-		fullfuture = true,
-		color = {r=255,g=255,b=255,a=125},
-		flatten=false,
-		renderqueue=3000,
-		--texture="subroad.png",
-		shader="VertexColorUnlitTintedAlpha",
-		shadercolors={_Color={r=255,g=255,b=255,a=255}}
-	}
+--if jumping then wakeHeight=(ifhifi(4,2)) else wakeHeight = 0 end
+wakeHeight=(ifhifi(4,2))
+extraWidth = trackWidth - 5
+if jumping then extraWidth = 0 end
+wakeStrafe = 7.5 + extraWidth
+--wakeStrafe = 14.7
+if not jumping then wakeHeight = 2 end
+SetWake{ --setup the spray coming from the two pulling "boats"
+	height = wakeHeight,
+	fallrate = 0.95,
+	--offsets = {{wakeStrafe,0,0}, {-wakeStrafe,0,0}, {0,0,0}},
+	offsets = {{wakeStrafe,0,0}, {-wakeStrafe,0,0}},
+	--strafe = wakeStrafe,
+	shader = fif(jumping, "VertexColorUnlitTintedAddSmooth", "VertexColorUnlitTintedAddSmoothQuarter"),
+	layer = fif(jumping, 11, 13), -- looks better not rendered in background when water surface is not type 2
+	bottomcolor = fif(jumping, "highway", "highwayinverted"), -- {r=114,g=148,b=255},
+	topcolor = {r=0,g=0,b=0}
+}
 
-	local shoulderLines = skinvars["shoulderlines"]
-	for i=1,#shoulderLines do
-		CreateRail{ -- lane line
-			positionOffset={
-				x=shoulderLines[i],
-				y=0.02},
-			crossSectionShape={
-				{x=-.1,y=0},
-				{x=.1,y=0}},
-			perShapeNodeColorScalers={
-				1,
-				1},
-			colorMode="highway",
-			color = {r=255,g=255,b=255},
-			flatten=false,
-			--nodeskip = 2,
-			wrapnodeshape = false,
-			shader="VertexColorUnlitTintedQuadruple"
-		}
-		CreateRail{ -- lane line
-			positionOffset={
-				x=shoulderLines[i],
-				y=0.04},
-			crossSectionShape={
-				{x=-.04,y=0},
-				{x=.04,y=0}},
-			perShapeNodeColorScalers={
-				1,
-				1},
-			colorMode="highway",
-			color = {r=255,g=255,b=255},
-			flatten=false,
-			--nodeskip = 2,
-			wrapnodeshape = false,
-			shader="VertexColorUnlitTintedDouble"
-		}
-	end
+CreateRail{--road surface
+    positionOffset={
+        x=0,
+        y=0},
+    crossSectionShape={
+        {x=-trackWidth,y=0},
+        {x=trackWidth,y=0}},
+    colorMode="static",
+    layer=13,
+    wrapnodeshape = false,
+    fullfuture = true,
+    color = {r=255,g=255,b=255,a=125},
+    flatten=false,
+    renderqueue=3000,
+    --texture="subroad.png",
+    shader="VertexColorUnlitTintedAlpha",
+    shadercolors={_Color={r=255,g=255,b=255,a=255}}
+}
+
+local shoulderLines = skinvars["shoulderlines"]
+for i=1,#shoulderLines do
+    CreateRail{ -- lane line
+        positionOffset={
+            x=shoulderLines[i],
+            y=0.02},
+        crossSectionShape={
+            {x=-.1,y=0},
+            {x=.1,y=0}},
+        perShapeNodeColorScalers={
+            1,
+            1},
+        colorMode="highwayinverted",
+        color = {r=255,g=255,b=255},
+        flatten=false,
+        --nodeskip = 2,
+        wrapnodeshape = false,
+        shader="VertexColorUnlitTintedAddSmooth"
+    }
+    CreateRail{ -- lane line
+        positionOffset={
+            x=shoulderLines[i],
+            y=0.04},
+        crossSectionShape={
+            {x=-.04,y=0},
+            {x=.04,y=0}},
+        perShapeNodeColorScalers={
+            1,
+            1},
+        colorMode="highwayinverted",
+        color = {r=255,g=255,b=255},
+        flatten=false,
+        --nodeskip = 2,
+        wrapnodeshape = false,
+        shader="VertexColorUnlitTintedAddSmooth"
+    }
 end
+
+CreateRail{--left wake guide
+    positionOffset={
+        x=-wakeStrafe,
+        y=0},
+    crossSectionShape={
+        {x=-.1,y=-.05},
+        {x=-.1,y=.05},
+        {x=.1,y=.05},
+        {x=.1,y=-.05}},
+    perShapeNodeColorScalers={
+        1,
+        1,
+        1,
+        1},
+    colorMode=fif(jumping,"highway","highwayinverted"),
+    color = {r=255,g=255,b=255},
+    flatten=jumping,
+    texture="White.png",
+    renderqueue=2999,
+    shader="VertexColorUnlitTintedAddSmooth"
+}
+
+CreateRail{--right wake guide
+    positionOffset={
+        x=wakeStrafe,
+        y=0},
+    crossSectionShape={
+        {x=-.1,y=-.05},
+        {x=-.1,y=.05},
+        {x=.1,y=.05},
+        {x=.1,y=-.05}},
+    perShapeNodeColorScalers={
+        1,
+        1,
+        1,
+        1},
+    colorMode=fif(jumping,"highway","highwayinverted"),
+    color = {r=255,g=255,b=255},
+    flatten=jumping,
+    texture="White.png",
+    renderqueue=2999,
+    shader="VertexColorUnlitTintedAddSmooth"
+}
+
+auroraExtent = ifhifi(77, 22)
+CreateRail{--left aurora
+	positionOffset={
+		x=-18,
+		y=33},
+	crossSectionShape={
+		{x=-auroraExtent,y=.5},
+		{x=-11,y=.5},
+		{x=-11,y=-.5},
+		{x=-auroraExtent,y=-.5}},
+	perShapeNodeColorScalers={
+		0,
+		1,
+		1,
+		0},
+	colorMode="aurora",
+	color = {r=255,g=255,b=255},
+	flatten=true,
+    layer=11,
+	texture="White.png",
+	renderqueue=2999,
+	shader="VertexColorUnlitTintedAddSmooth"
+}
+
+CreateRail{--left aurora lower
+	positionOffset={
+		x=0,
+		y=-20},
+	crossSectionShape={
+		{x=-auroraExtent,y=.5},
+		{x=-11,y=.5},
+		{x=-11,y=-.5},
+		{x=-auroraExtent,y=-.5}},
+	perShapeNodeColorScalers={
+		0,
+		1,
+		1,
+		0},
+	colorMode="aurora",
+	color = {r=255,g=255,b=255},
+	flatten=true,
+    layer=11,
+	texture="White.png",
+	renderqueue=2999,
+	shader="VertexColorUnlitTintedAddSmooth"
+}
+
+CreateRail{--right aurora
+	positionOffset={
+		x=18,
+		y=33},
+	crossSectionShape={
+		{x=11,y=.5},
+		{x=auroraExtent,y=.5},
+		{x=auroraExtent,y=-.5},
+		{x=11,y=-.5}},
+	perShapeNodeColorScalers={
+		1,
+		0,
+		0,
+		1},
+	colorMode="aurora",
+	color = {r=255,g=255,b=255},
+	flatten=true,
+    layer=11,
+	texture="White.png",
+	renderqueue=2999,
+	shader="VertexColorUnlitTintedAddSmooth"
+}
+
+CreateRail{--right aurora lower
+	positionOffset={
+		x=0,
+		y=-20},
+	crossSectionShape={
+		{x=11,y=.5},
+		{x=auroraExtent,y=.5},
+		{x=auroraExtent,y=-.5},
+		{x=11,y=-.5}},
+	perShapeNodeColorScalers={
+		1,
+		0,
+		0,
+		1},
+	colorMode="aurora",
+	color = {r=255,g=255,b=255},
+	flatten=true,
+    layer=11,
+	texture="White.png",
+	renderqueue=2999,
+	shader="VertexColorUnlitTintedAddSmooth"
+}
